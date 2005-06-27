@@ -1,0 +1,10 @@
+Revision history for Perl extension SAL.
+
+3.01  Sun Jun 26 18:44:46 2005
+	- Packaged for CPAN to clean up installation, and docs
+
+3.00  First public release, not properly packaged.
+
+2.00  Unreleased.  Massive overhaul (complete rewrite)
+
+1.00  Unreleased.  Basic Concepts (and terrible documentation.)
