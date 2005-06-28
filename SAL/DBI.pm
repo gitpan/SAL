@@ -12,7 +12,7 @@ use Carp;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.01';
+	$VERSION = '3.02';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -21,6 +21,85 @@ BEGIN {
 our @EXPORT_OK;
 
 END { }
+
+=pod
+
+=head1 Name
+
+SAL::DBI - Database abstraction for SAL (Sub Application Layer for Perl)
+
+=head1 Synopsis
+
+ use SAL::DBI;
+
+ my $dbo_factory = new SAL::DBI;
+ my $dbo_sqlite = $dbo_factory->spawn_sqlite($filename);
+ my $dbo_mysql = $dbo_factory->spawn_mysql($server, $user, $pass, $database);
+ my $dbo_odbc = $dbo_factory->spawn_odbc($dsn, $user, $pass);
+ my $dbo_temp = $dbo_factory->spawn_sqlite(':memory:');
+
+ # SQL Queries
+ my $rv = $dbo_temp->do(qq|CREATE TABLE SomeTable(some_column varchar(255), some_other_column varchar(255))|);
+ my ($w, $h) = $dbo_temp->execute('SELECT * FROM SomeTable WHERE some_column=?', $somevalue);
+
+ # Processing Records
+ for (my $i=0; $i<=$h; $i++) {
+	# Accessing the data directly...
+ 	my $field_0 = $dbo_temp->{data}->[$i][0];
+ 	my $field_1 = $dbo_temp->{data}->[$i][1];
+
+	# Grab the fields as a list
+	my @record = $dbo_temp->get_row($i);
+ }
+
+ # Processing entire columns
+ for (my $i=0; $i<$w; $i++) {
+	my @column = $dbo_temp->get_column($i);
+	# do something with the data...
+ }
+
+=head1 Eponymous Hash
+
+This section describes some useful items in the SAL::DBI eponymous hash.  Arrow syntax is used here for readability, 
+but is not strictly required.
+
+Note: Replace $SAL::DBI with the name of your database object... eg. $dbo_temp->{connection}->{dbh}
+
+=head2 Connection Information
+
+$SAL::DBI->{connection}->{dbh} contains the DBI database handle.
+
+$SAL::DBI->{connection}->{sth} contains the DBI statement handle.
+
+=head2 Formatting Control
+
+$SAL::DBI->{fields}->[$col]{name} contains the name of the field.  (an alias for {fields}{label})
+
+$SAL::DBI->{fields}->[$col]{label} contains the name of the field. (an alias for {fields}{name})
+
+$SAL::DBI->{fields}->[$col]{type} contains the datatype for the field
+
+$SAL::DBI->{fields}->[$col]{visible} contains the visibility status flag for this field
+
+$SAL::DBI->{fields}->[$col]{writeable} contains a write-access flag.  (Use to indicate field is locked in your apps.)
+
+$SAL::DBI->{fields}->[$col]{css} contains a CSS string for displaying this field on the web
+
+$SAL::DBI->{fields}->[$col]{precision} is used to specify the number of digits to the right of a decimail place.
+
+$SAL::DBI->{fields}->[$col]{commify} is used to force commas in numbers > 999
+
+$SAL::DBI->{fields}->[$col]{align} is used for aligning the contents of the field (usually for the web).  Default is 'left';
+
+$SAL::DBI->{fields}->[$col]{prefix} is used to prepend a string to the contents of any data in this column.
+
+$SAL::DBI->{fields}->[$col]{postfix} is used to append a string to the contents of any data in this column.
+
+=head2 The Dataset
+
+$SAL::DBI->{data}->[$y][$x] is used to access a returned dataset as if it were a two-dimensional array.  (Yes, I'm very lazy. ;-)
+
+=cut
 
 our %DBI = (
 ######################################
@@ -85,6 +164,17 @@ for my $datum (keys %{ _classobj() }) {
 
 ##########################################################################################################################
 # Constructors (Public)
+
+=pod
+
+=head1 Constructors
+
+=head2 new()
+
+Builds a basic factory object.  Used for spawning database objects.
+
+=cut
+
 sub new {
 	my $obclass = shift || __PACKAGE__;
 	my $class = ref($obclass) || $obclass;
@@ -94,6 +184,14 @@ sub new {
 
 	return $self;
 }
+
+=pod
+
+=head2 spawn_mysql($server, $user, $passwd, $database)
+
+Builds a MySQL-specific database object.
+
+=cut
 
 sub spawn_mysql {
 	my $obclass = shift || __PACKAGE__;
@@ -120,6 +218,14 @@ sub spawn_mysql {
 	return $self;
 }
 
+=pod
+
+=head2 spawn_odbc($dsn, $user, $passwd)
+
+Builds an ODBC-specific database object.
+
+=cut
+
 sub spawn_odbc {
 	my $obclass = shift || __PACKAGE__;
 	my $class = ref($obclass) || $obclass;
@@ -143,6 +249,16 @@ sub spawn_odbc {
 
 	return $self;
 }
+
+=pod
+
+=head2 spawn_sqlite($dbfile)
+
+Builds a SQLite-specific database object.
+
+Note that temporary databases can be created by passing the string ':memory:' in place of a filename.
+
+=cut
 
 sub spawn_sqlite {
 	my $obclass = shift || __PACKAGE__;
@@ -181,11 +297,31 @@ sub destruct {
 
 ##########################################################################################################################
 # Public Methods
+
+=pod
+
+=head1 Methods
+
+=head2 $rv = do($statement)
+
+Executes a SQL command that does not return a dataset.  Check $rv (result value) for errors.
+
+=cut
+
 sub do {
 	my ($self, $statement) = @_;
 	my $rv = $self->{connection}{dbh}->do($statement);
 	return $rv;
 }
+
+=pod
+
+=head2 ($w, $h) = execute($statement, @params)
+
+Executes a SQL command that returns a dataset.  The list ($w, $h) contains the size of the SAL::DBI's internal data 
+array.  (Useful in for loops ;)
+
+=cut
 
 sub execute {
 	my ($self, $statement, @params) = @_;
@@ -216,6 +352,14 @@ sub execute {
 	return ($width, $height);
 }
 
+=pod
+
+=head2 @column = get_column($col)
+
+Return a dataset column as a list.
+
+=cut
+
 sub get_column {
 	my $self = shift;
 	my $column = shift;
@@ -227,6 +371,14 @@ sub get_column {
 
 	return @data;
 }
+
+=pod
+
+=head2 @record = get_row($row)
+
+Return a dataset record as a list.
+
+=cut
 
 sub get_row {
 	my $self = shift;
@@ -240,6 +392,14 @@ sub get_row {
 	return @data;
 }
 
+=pod
+
+=head2 @labels = get_labels()
+
+Get a list containing the dataset's field names.
+
+=cut
+
 sub get_labels {
 	my $self = shift;
 	my @data;
@@ -251,6 +411,14 @@ sub get_labels {
 	return @data;
 }
 
+=pod
+
+=head2 clean_times($col)
+
+Strip times from a datetime column.
+
+=cut
+
 sub clean_times {
 	my $self = shift;
 	my $col = shift || '0';
@@ -259,6 +427,14 @@ sub clean_times {
 		$self->{data}->[$i][$col] =~ s/\s+\d\d:\d\d:\d\d.*$//;
 	}
 }
+
+=pod
+
+=head2 short_dates($col)
+
+Convert a datetime column to use short dates.  (Note, use clean_times() first)
+
+=cut
 
 sub short_dates {
 	my $self = shift;
@@ -336,5 +512,17 @@ sub _extract_table {
 
 	return $table;
 }
+
+=pod
+
+=head1 Author
+
+Scott Elcomb <psema4@gmail.com>
+
+=head1 See Also
+
+SAL, SAL::WebDDR, SAL::Graph, SAL::WebApplication
+
+=cut
 
 1;

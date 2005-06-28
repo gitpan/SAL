@@ -13,7 +13,7 @@ use Data::Dumper;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.01';
+	$VERSION = '3.02';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -22,6 +22,60 @@ BEGIN {
 our @EXPORT_OK;
 
 END { }
+
+=pod
+
+=head1 Name
+
+SAL::WebDDR - Data-Driven Reporting module for SAL (Sub Application Layer for Perl)
+
+=head1 Synopsis
+
+ use CGI;
+ use CGI::Carp qw(fatalsToBrowser);
+ use SAL::DBI;
+ use SAL::WebDDR;
+
+ my $dbo_factory = new SAL::DBI;
+ my $dbo_data = $dbo_factory->spawn_odbc('REPORTING_DSN',$report_user, $report_pass);
+    $dbo_data->execute("sp_FinancialResults 'Q3'");
+
+ my $report = new SAL::WebDDR;
+    $report->{datasource} = $dbo_data;
+    $report->{dfm_column} = '0';			# Data Formatting Markup is in column 0
+    $report->{skip_fields} = 's 0 1 12 14 15 16 s';	# Do not display columns specified between the s's
+
+ print "Content-type: text/html\n\n";
+ my $canvas = $report->build_report();
+
+ print qq[
+ <html>
+ <head>
+ <title>SampleCorp: Financial Results for Q3 2005</title>
+ </head>
+ <body>
+ $canvas
+ </body>
+ </html>
+ ];
+
+=head1 Eponymous Hash
+
+This section describes some useful items in the SAL::WebDDR eponymous hash.  Arrow syntax is used here for readability, 
+but is not strictly required.
+
+Note: Replace $SAL::WebDDR with the name of your database object... eg. $report->{window}->{border}
+
+=head2 Datasource Information
+
+$SAL::WebDDR->{datasource} is a reference to a SAL::DBI object
+
+=head2 Formatting Control
+
+$SAL::WebDDR->{dfm_column} tells SAL::WebDDR where to look for DFM (Data Formatting Markup) tags
+$SAL::WebDDR->{skip_fields} specifies columns you want to skip in the reports output.
+
+=cut
 
 our %WebDDR = (
 ######################################
@@ -80,6 +134,17 @@ for my $datum (keys %{ _classobj() }) {
 
 ##########################################################################################################################
 # Constructors (Public)
+
+=pod
+
+=head1 Constructors
+
+=head2 new()
+
+Builds a data-driven reporting object.
+
+=cut
+
 sub new {
 	my $obclass = shift || __PACKAGE__;
 	my $class = ref($obclass) || $obclass;
@@ -132,6 +197,16 @@ sub destruct {
 ##########################################################################################################################
 # Public Methods
 
+=pod
+
+=head1 Methods
+
+=head2 $canvas = build_window($titlebar, $canvas, $statusbar, $width)
+
+Builds a window-like html table using 3 scalars: $titelbar, $canvas, $statusbar.  $width is optional.
+
+=cut
+
 sub build_window {
 	my ($self, $titlebar, $canvas, $statusbar, $width) = @_;
 	if (! $width) { $width = '100%'; }
@@ -160,6 +235,15 @@ sub build_window {
 
 	return $content;
 }
+
+=pod
+
+=head2 $canvas = build_scroll_window($titlebar, $canvas, $statusbar, $width)
+
+Same as build_window() but uses an iframe for the main window content ($canvas).  JScript is used to copy the contents 
+of $canvas into the iframe.
+
+=cut
 
 sub build_scroll_window {
 	my ($self, $titlebar, $canvas, $statusbar, $width) = @_;
@@ -212,6 +296,14 @@ document.frames[0].document.close();
 	return $content;
 }
 
+=pod
+
+=head2 $canvas = build_iframe_window($titlebar, $url, $statusbar, $width)
+
+Same as build_scroll_window() but the embedded iframe retrieves it's content from $url.
+
+=cut
+
 sub build_iframe_window {
 	my ($self, $titlebar, $url, $statusbar, $width) = @_;
 	if (! $width) { $width = '100%'; }
@@ -240,6 +332,22 @@ sub build_iframe_window {
 
 	return $content;
 }
+
+=pod
+
+=head2 $canvas = build_data_table($datasource, $commify, $highlight_negatives, $width)
+
+Build's a simple spreadsheet-like table using $datasource (a SAL::DBI object).
+
+B<NOTE:> This method B<does not> use it's internal datasource connection.  (~fixme)
+
+If you want your numbers with commas, set $commify to a non-zero value.
+
+If you'd like negative numbers highlighted, set $highlight_negatives to a non-zero value.
+
+$width is optional, defaulting to 100%
+
+=cut
 
 sub build_data_table {
 	my ($self, $dbo, $commify, $highlight_negatives, $width) = @_;
@@ -339,8 +447,11 @@ sub build_data_table {
 	return $content;
 }
 
-##########################################################################################################################
-# Private Methods
+=head2 $canvas = build_report()
+
+Build's a data driven report.  Please see the file 'salreport.cgi' in the samples directory.
+
+=cut
 
 sub build_report {
 	my $self = shift;
@@ -368,6 +479,9 @@ sub build_report {
 
 	return $content;
 }
+
+##########################################################################################################################
+# Private Methods
 
 sub build_record_html {
 	my $self = shift;
@@ -827,5 +941,17 @@ sub commify {
 	$number =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
 	return scalar reverse $number;
 }
+
+=pod
+
+=head1 Author
+
+Scott Elcomb <psema4@gmail.com>
+
+=head1 See Also
+
+SAL, SAL::DBI, SAL::Graph, SAL::WebApplication
+
+=cut
 
 1;

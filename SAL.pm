@@ -24,7 +24,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 	
 );
-our $VERSION = '3.01';
+our $VERSION = '3.02';
 
 
 # Preloaded methods go here.
@@ -32,19 +32,19 @@ our $VERSION = '3.01';
 1;
 __END__
 
-=head1 NAME
+=head1 Name
 
 SAL - A Sub Application Layer for Perl
 
-=head1 SYNOPSIS
+=head1 Synopsis
 
   use SAL;
 
-=head1 DESCRIPTION
+=head1 Description
 
 This is a stub.  Documentation needs to be done for all SAL::* modules unfortunately.
 
-=head2 WHAT IT IS AND IS NOT
+=head2 What it is, and what it is not
 
 SAL is library for building multi-platform tools (shell, desktop, web).  It's primary purpose is to allow for rapid 
 development of business reporting tools.  As with Perl, it's flexible enough to be used in a wide variety of 
@@ -53,16 +53,15 @@ environments, and for all kinds of needs.
 SAL-proper IS NOT an application framework, although some tinkering has gone on in that neck of the woods.  (SAL::Kernel and SAL::VFS are still on the drawing 
 board, but GUI widgets and SDL integration will probably be coming first.)
 
-=head1 PREREQUISITES
+=head1 Required Modules
 
-For installation through CPAN, SAL requires the following:
+Installing SAL through CPAN requires the following:
 
-  SAL requires at least DBD::SQLite.  DBD::mysql and DBD::odbc are also supported database drivers 
-  (needs to be opened up for any DBI drivers...)
+SAL requires at least DBD::SQLite.  DBD::mysql and DBD::odbc are also supported database drivers
 
-  SAL also requires GD::Graph and it's prerequisites.  GD::Graph3d is optional
+SAL also requires GD::Graph and it's prerequisites.  GD::Graph3d is optional, though it might replace GD::Graph as a prerequisite in the future.
 
-=head1 SAMPLES
+=head1 Samples
 
 In the installation tarball, you'll find a samples directory with the following quick-and-dirty examples.  They are 
 (lol) not anywhere near real programs, but will hopefully help get you started.
@@ -73,12 +72,12 @@ In the installation tarball, you'll find a samples directory with the following 
   salgraph.cgi   - a very simple graphing example.
   salsurvey.cgi  - a simple but effective web survey script.  Requires MySQL database (or modification)
 
-=head1 AUTHOR
+=head1 Author
 
-Scott Elcomb <lt>psema4@gmail.com<gt>
+Scott Elcomb <psema4@gmail.com>
 
-=head1 SEE ALSO
+=head1 See Also
 
-L<SAL::DBI>, L<SAL::WebDDR>, L<SAL::Graph>, L<SAL::WebApplication>.
+SAL::DBI, SAL::WebDDR, SAL::Graph, SAL::WebApplication
 
 =cut

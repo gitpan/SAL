@@ -22,7 +22,7 @@ use GD::Graph::colour qw(:colours :lists :files :convert);
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.01';
+	$VERSION = '3.02';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -31,6 +31,76 @@ BEGIN {
 our @EXPORT_OK;
 
 END { }
+
+=pod
+
+=head1 Name
+
+SAL::Graph - Graphing abstraction for SAL (Sub Application Layer for Perl)
+
+=head1 Synopsis
+
+ # Derived from salgraph.cgi in the samples directory
+ use CGI;
+ use SAL::DBI;
+ use SAL::Graph;
+
+ my $send_mime_headers = 1;
+
+ my $q = new CGI;
+ my $self_url = $q->script_name();
+
+ my $graph_obj = new SAL::Graph;
+ my $dbo_factory = new SAL::DBI;
+ my $dbo_data = $dbo_factory->spawn_sqlite(':memory:');
+
+ # Build a sample database...
+ my $report_query = qq[create table ReportData (dfm varchar(255), name varchar(255), purchases int(11), sort int(11))];
+ $dbo_data->do($report_query);
+
+ # Obviously not optimized...
+ $report_query = qq[insert into ReportData values('Data Formatting Markup Tags','Customer','Purchases','0')];
+ $dbo_data->do($report_query);
+ $report_query = qq[insert into ReportData values(' ','Morris','30','1')];
+ $dbo_data->do($report_query);
+ $report_query = qq[insert into ReportData values(' ','Albert','22','1')];
+ $dbo_data->do($report_query);
+
+ my $graph_query = 'SELECT name, purchases FROM ReportData WHERE (sort > 0) and (sort < 998) ORDER BY sort, name';
+ my ($w, $h) = $dbo_data->execute($graph_query);
+
+ my @legend = qw(a b);
+ $graph_obj->set_legend(@legend);
+ $graph_obj->{image}{width} = '400';
+ $graph_obj->{image}{height} = '300';
+ $graph_obj->{formatting}{title} = "Customer Purchases";
+ $graph_obj->{formatting}{'y_max_value'} = 50;
+ $graph_obj->{formatting}{'y_min_value'} = 0;
+ $graph_obj->{formatting}{'x_label'} = 'Customer';
+ $graph_obj->{formatting}{'y_label'} = 'Purchases';
+ $graph_obj->{formatting}{'y_tick_number'} = 10;
+ $graph_obj->{formatting}{'boxclr'} = '#EEEEFF';
+ $graph_obj->{formatting}{'long_ticks'} = '1';
+ $graph_obj->{formatting}{'line_types'} = [(1,3,4)];
+ $graph_obj->{formatting}{'line_width'} = '2';
+ $graph_obj->{formatting}{'markers'} = [(7,5,1,8,2,6)];
+ $graph_obj->{type}='bars3d';
+
+ my $graph = $graph_obj->build_graph($send_mime_headers, $dbo_data, $graph_query);
+ print $graph;
+
+=head1 Eponymous Hash
+
+This section describes some useful items in the SAL::_ eponymous hash.  Arrow syntax is used here for readability, 
+but is not strictly required.
+
+Note: Replace $SAL::_ with the name of your database object... eg. $dbo_temp->{connection}->{dbh}
+
+=head2 Section Information
+
+$SAL::DBI->
+
+=cut
 
 our %Graph = (
 ######################################
@@ -69,6 +139,17 @@ for my $datum (keys %{ _classobj() }) {
 
 ##########################################################################################################################
 # Constructors (Public)
+
+=pod
+
+=head1 Constructors
+
+=head2 new()
+
+Prepares a new Graph object.
+
+=cut
+
 sub new {
 	my $obclass = shift || __PACKAGE__;
 	my $class = ref($obclass) || $obclass;
@@ -108,8 +189,6 @@ sub new {
 	my @plot_colors = ('#598F94','#980D36','#4848FF','#DDDD00');
 	$self->{formatting}{'dclrs'} = \@plot_colors;
 
-	$self->{dump} = Dumper($self);
-
 	return $self;
 }
 
@@ -122,6 +201,18 @@ sub destruct {
 
 ##########################################################################################################################
 # Public Methods
+
+=pod
+
+=head1 Methods
+
+=head2 $graph = build_graph($send_mime_headers, $datasource, $query, @params)
+
+Generate a graph by running the sql $query (and @params if provided) against $datasource (a SAL::DBI object).
+
+If you're generating a graph on the fly to be displayed on the web, set $send_mime_headers to a non-zero value.
+
+=cut
 
 sub build_graph {
 	my ($self, $send_mime, $datasource, $query, @params) = @_;
@@ -188,5 +279,17 @@ sub set_legend {
 		$index++;
 	}
 }
+
+=pod
+
+=head1 Author
+
+Scott Elcomb <psema4@gmail.com>
+
+=head1 See Also
+
+SAL, SAL::DBI, SAL::WebDDR, SAL::WebApplication
+
+=cut
 
 1;

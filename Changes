@@ -1,5 +1,11 @@
 Revision history for Perl extension SAL.
 
+3.02  Mon Jun 27 22:23:10 2005
+	- Updated SAL.pm pod
+	- Added SAL::DBI pod
+	- Added SAL::Graph pod
+	- Added SAL::WebDDR pod
+
 3.01  Sun Jun 26 18:44:46 2005
 	- Packaged for CPAN to clean up installation, and docs
 
