@@ -14,7 +14,7 @@ use SAL::Web;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.02';
+	$VERSION = '3.03';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();

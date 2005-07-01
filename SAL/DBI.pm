@@ -12,7 +12,7 @@ use Carp;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.02';
+	$VERSION = '3.03';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -26,7 +26,7 @@ END { }
 
 =head1 Name
 
-SAL::DBI - Database abstraction for SAL (Sub Application Layer for Perl)
+SAL::DBI - Database abstraction for SAL
 
 =head1 Synopsis
 
@@ -65,39 +65,33 @@ but is not strictly required.
 
 Note: Replace $SAL::DBI with the name of your database object... eg. $dbo_temp->{connection}->{dbh}
 
-=head2 Connection Information
+=over 1
 
-$SAL::DBI->{connection}->{dbh} contains the DBI database handle.
+=item Connection Information
 
-$SAL::DBI->{connection}->{sth} contains the DBI statement handle.
+ $SAL::DBI->{connection}->{dbh} contains the DBI database handle.
+ $SAL::DBI->{connection}->{sth} contains the DBI statement handle.
 
-=head2 Formatting Control
+=item Formatting Control
 
-$SAL::DBI->{fields}->[$col]{name} contains the name of the field.  (an alias for {fields}{label})
+ $SAL::DBI->{fields}->[$col]{name} contains the name of the field.  (an alias for {fields}{label})
+ $SAL::DBI->{fields}->[$col]{label} contains the name of the field. (an alias for {fields}{name})
+ $SAL::DBI->{fields}->[$col]{type} contains the datatype for the field
+ $SAL::DBI->{fields}->[$col]{visible} contains the visibility status flag for this field
+ $SAL::DBI->{fields}->[$col]{writeable} contains a write-access flag.  (Use to indicate field is locked in your apps.)
+ $SAL::DBI->{fields}->[$col]{css} contains a CSS string for displaying this field on the web
+ $SAL::DBI->{fields}->[$col]{precision} is used to specify the number of digits to the right of a decimail place.
+ $SAL::DBI->{fields}->[$col]{commify} is used to force commas in numbers > 999
+ $SAL::DBI->{fields}->[$col]{align} is used for aligning the contents of the field (usually for the web).  Default is 'left';
+ $SAL::DBI->{fields}->[$col]{prefix} is used to prepend a string to the contents of any data in this column.
+ $SAL::DBI->{fields}->[$col]{postfix} is used to append a string to the contents of any data in this column.
 
-$SAL::DBI->{fields}->[$col]{label} contains the name of the field. (an alias for {fields}{name})
+=item The Dataset
 
-$SAL::DBI->{fields}->[$col]{type} contains the datatype for the field
+ $SAL::DBI->{data}->[$y][$x] is used to access a returned dataset as if it were a two-dimensional array.
+ (Yes, I'm lazy. ;-)
 
-$SAL::DBI->{fields}->[$col]{visible} contains the visibility status flag for this field
-
-$SAL::DBI->{fields}->[$col]{writeable} contains a write-access flag.  (Use to indicate field is locked in your apps.)
-
-$SAL::DBI->{fields}->[$col]{css} contains a CSS string for displaying this field on the web
-
-$SAL::DBI->{fields}->[$col]{precision} is used to specify the number of digits to the right of a decimail place.
-
-$SAL::DBI->{fields}->[$col]{commify} is used to force commas in numbers > 999
-
-$SAL::DBI->{fields}->[$col]{align} is used for aligning the contents of the field (usually for the web).  Default is 'left';
-
-$SAL::DBI->{fields}->[$col]{prefix} is used to prepend a string to the contents of any data in this column.
-
-$SAL::DBI->{fields}->[$col]{postfix} is used to append a string to the contents of any data in this column.
-
-=head2 The Dataset
-
-$SAL::DBI->{data}->[$y][$x] is used to access a returned dataset as if it were a two-dimensional array.  (Yes, I'm very lazy. ;-)
+=back
 
 =cut
 
@@ -124,9 +118,9 @@ our %DBI = (
 	'name'		=> '',
 	'label'		=> '',
 	'type'		=> '',
-	'visible'	=>  0,
-	'header'	=>  0,
-	'writeable'	=>  0,
+	'visible'	=> '',
+	'header'	=> '',
+	'writeable'	=> '',
 	'css'		=> '',
 	'precision'	=> '',
 	'commify'	=> '',
@@ -390,6 +384,37 @@ sub get_row {
 	}
 
 	return @data;
+}
+
+=pod
+
+=head2 $csv = get_csv()
+
+Get the object's dataset as a CSV file
+
+=cut
+
+sub get_csv {
+        my $self = shift;
+        my @data;
+        my @labels = $self->get_labels();
+        my $labels = join(',', @labels);
+        push (@data, $labels);
+                                                                                                                             
+                                                                                                                             
+        for (my $i=0; $i < $self->{internal}{height}; $i++) {
+                my @record = $self->get_row($i);
+                for (my $j=0; $j <= $self->{internal}{width}; $j++) {
+			$record[$j] = qq["$record[$j]"];
+                        $record[$j] =~ s/\[.*\]//;
+                }
+                my $record = join(',', @record);
+                push (@data, $record);
+        }
+                                                                                                                             
+                                                                                                                             
+        my $data = join("\r\n", @data);
+        return $data;
 }
 
 =pod

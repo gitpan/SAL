@@ -22,7 +22,7 @@ use GD::Graph::colour qw(:colours :lists :files :convert);
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.02';
+	$VERSION = '3.03';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -36,7 +36,7 @@ END { }
 
 =head1 Name
 
-SAL::Graph - Graphing abstraction for SAL (Sub Application Layer for Perl)
+SAL::Graph - Graphing abstraction for SAL::DBI database objects
 
 =head1 Synopsis
 
@@ -94,11 +94,26 @@ SAL::Graph - Graphing abstraction for SAL (Sub Application Layer for Perl)
 This section describes some useful items in the SAL::_ eponymous hash.  Arrow syntax is used here for readability, 
 but is not strictly required.
 
-Note: Replace $SAL::_ with the name of your database object... eg. $dbo_temp->{connection}->{dbh}
+Note: Replace $SAL::Graph with the name of your database object... eg. $graph->{datasource} = $dbo_data
 
-=head2 Section Information
+=over 1
 
-$SAL::DBI->
+=item Datasource
+
+ $SAL::Graph->{datasource} should be a SAL::DBI object (currently unused.  see build_graph() method.)
+
+=item Image Attributes
+
+ $SAL::Graph->{image}{width} should be set to the desired output width. Default: 400px
+ $SAL::Graph->{image}{height} should be set to the desired output height.  Default: 400px
+
+=item Legend and Formatting
+
+ $SAL::Graph->{type} should be set to the GD::Graph or GD::Graph3d graph-type.  (eg. linespoints, bar3d, etc)
+ $SAL::Graph->{legend} should be set to a list containing entries to show in the graph's legend.
+ $SAL::Graph->{formatting} should be a hash containing GD::Graph and/or GD::Graph3d formatting options.
+
+=back
 
 =cut
 
@@ -288,7 +303,7 @@ Scott Elcomb <psema4@gmail.com>
 
 =head1 See Also
 
-SAL, SAL::DBI, SAL::WebDDR, SAL::WebApplication
+SAL, SAL::DBI, SAL::WebDDR, SAL::WebApplication, GD::Graph, GD::Graph3d
 
 =cut
 

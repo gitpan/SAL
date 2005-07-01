@@ -1,5 +1,9 @@
 Revision history for Perl extension SAL.
 
+3.03  Wed Jun 30 20:59:03 2005
+	- Added CSV export method to SAL::DBI (Thanks to Payal Pal for the suggestion.)
+	- Updated SAL::DBI, SAL::Graph, SAL::WebDDR pods
+
 3.02  Mon Jun 27 22:23:10 2005
 	- Updated SAL.pm pod
 	- Added SAL::DBI pod

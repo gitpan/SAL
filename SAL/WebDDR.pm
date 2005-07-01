@@ -13,7 +13,7 @@ use Data::Dumper;
 BEGIN {
 	use Exporter ();
 	our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-	$VERSION = '3.02';
+	$VERSION = '3.03';
 	@ISA = qw(Exporter);
 	@EXPORT = qw();
 	%EXPORT_TAGS = ();
@@ -27,7 +27,7 @@ END { }
 
 =head1 Name
 
-SAL::WebDDR - Data-Driven Reporting module for SAL (Sub Application Layer for Perl)
+SAL::WebDDR - Web-based reporting abstraction for SAL::DBI database objects
 
 =head1 Synopsis
 
@@ -64,16 +64,20 @@ SAL::WebDDR - Data-Driven Reporting module for SAL (Sub Application Layer for Pe
 This section describes some useful items in the SAL::WebDDR eponymous hash.  Arrow syntax is used here for readability, 
 but is not strictly required.
 
-Note: Replace $SAL::WebDDR with the name of your database object... eg. $report->{window}->{border}
+Note: Replace $SAL::WebDDR with the name of your database object... eg. $report->{datasource} = $dbo_data
 
-=head2 Datasource Information
+=over 1
 
-$SAL::WebDDR->{datasource} is a reference to a SAL::DBI object
+=item Datasource
 
-=head2 Formatting Control
+ $SAL::WebDDR->{datasource} is a reference to a SAL::DBI object
 
-$SAL::WebDDR->{dfm_column} tells SAL::WebDDR where to look for DFM (Data Formatting Markup) tags
-$SAL::WebDDR->{skip_fields} specifies columns you want to skip in the reports output.
+=item Formatting Control
+
+ $SAL::WebDDR->{dfm_column} tells SAL::WebDDR where to look for DFM (Data Formatting Markup) tags
+ $SAL::WebDDR->{skip_fields} specifies columns you want to skip in the reports output.
+
+=back
 
 =cut
 
